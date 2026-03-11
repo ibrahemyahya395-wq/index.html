@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معلمة العلوم</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #c2185b;
+    --rose-light: #f48fb1;
+    --rose-pale: #fce4ec;
+    --green: #2e7d32;
+    --green-light: #81c784;
+    --green-pale: #e8f5e9;
+    --teal: #00695c;
+    --gold: #f9a825;
+    --cream: #fffdf7;
+    --text: #2c1a1a;
+    --text-soft: #5d4037;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ===== ANIMATED BACKGROUND FLOWERS ===== */
+  .bg-flowers {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .bg-flower {
+    position: absolute;
+    opacity: 0.06;
+    animation: floatFlower 20s infinite ease-in-out;
+  }
+
+  .bg-flower:nth-child(1) { top: 5%; left: 3%; font-size: 120px; animation-delay: 0s; }
+  .bg-flower:nth-child(2) { top: 15%; right: 5%; font-size: 80px; animation-delay: 3s; }
+  .bg-flower:nth-child(3) { top: 40%; left: 1%; font-size: 100px; animation-delay: 6s; }
+  .bg-flower:nth-child(4) { top: 60%; right: 2%; font-size: 90px; animation-delay: 9s; }
+  .bg-flower:nth-child(5) { top: 80%; left: 5%; font-size: 70px; animation-delay: 12s; }
+  .bg-flower:nth-child(6) { bottom: 5%; right: 8%; font-size: 110px; animation-delay: 4s; }
+  .bg-flower:nth-child(7) { top: 30%; left: 45%; font-size: 60px; animation-delay: 7s; opacity: 0.04; }
+
+  @keyframes floatFlower {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    33% { transform: translateY(-20px) rotate(5deg); }
+    66% { transform: translateY(10px) rotate(-3deg); }
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    position: relative;
+    z-index: 10;
+    background: linear-gradient(135deg, #880e4f 0%, #c2185b 40%, #ad1457 70%, #4a148c 100%);
+    padding: 0;
+    overflow: hidden;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -20%;
+    width: 140%; height: 200%;
+    background: radial-gradient(ellipse at 60% 40%, rgba(255,255,255,0.08) 0%, transparent 60%);
+  }
+
+  .header-flowers {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+  }
+
+  .hf {
+    position: absolute;
+    font-size: 60px;
+    opacity: 0.15;
+    animation: spin-float 15s infinite ease-in-out;
+  }
+  .hf:nth-child(1) { top: 10%; right: 5%; font-size: 90px; animation-delay: 0s; }
+  .hf:nth-child(2) { top: 50%; right: 15%; font-size: 50px; animation-delay: 2s; }
+  .hf:nth-child(3) { bottom: 10%; right: 25%; font-size: 70px; animation-delay: 4s; }
+  .hf:nth-child(4) { top: 20%; left: 5%; font-size: 55px; animation-delay: 1s; }
+  .hf:nth-child(5) { bottom: 15%; left: 10%; font-size: 80px; animation-delay: 3s; }
+  .hf:nth-child(6) { top: 5%; left: 30%; font-size: 45px; animation-delay: 5s; }
+
+  @keyframes spin-float {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    50% { transform: translateY(-15px) rotate(10deg) scale(1.05); }
+  }
+
+  /* Atom decoration */
+  .atom-deco {
+    position: absolute;
+    left: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 160px;
+    height: 160px;
+    opacity: 0.15;
+  }
+
+  .atom-circle {
+    position: absolute;
+    top: 50%; left: 50%;
+    border: 2px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .atom-circle:nth-child(1) { width: 160px; height: 60px; animation: rotate-atom 6s linear infinite; }
+  .atom-circle:nth-child(2) { width: 160px; height: 60px; animation: rotate-atom 6s linear infinite; animation-delay: -2s; transform: translate(-50%, -50%) rotate(60deg); }
+  .atom-circle:nth-child(3) { width: 160px; height: 60px; animation: rotate-atom 6s linear infinite; animation-delay: -4s; transform: translate(-50%, -50%) rotate(120deg); }
+  .atom-nucleus { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; background: white; border-radius: 50%; transform: translate(-50%, -50%); }
+
+  @keyframes rotate-atom { from { transform: translate(-50%, -50%) rotate(var(--r, 0deg)); } to { transform: translate(-50%, -50%) rotate(calc(var(--r, 0deg) + 360deg)); } }
+
+  .header-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 100%;
+    padding: 60px 20px;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    padding: 8px 24px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    backdrop-filter: blur(10px);
+    letter-spacing: 1px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .teacher-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f48fb1, #ce93d8);
+    border: 4px solid rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 40px rgba(194, 24, 91, 0.5);
+    animation: fadeDown 0.8s ease 0.2s both;
+  }
+
+  .header-title {
+    font-family: 'Amiri', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    line-height: 1.2;
+    margin-bottom: 12px;
+    animation: fadeDown 0.8s ease 0.3s both;
+  }
+
+  .header-subtitle {
+    font-size: 18px;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 30px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    animation: fadeDown 0.8s ease 0.4s both;
+  }
+
+  .header-flowers-text {
+    font-size: 28px;
+    animation: fadeDown 0.8s ease 0.5s both;
+    letter-spacing: 8px;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== NAV ===== */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(136, 14, 79, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 0 20px;
+  }
+
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 20px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-link:hover {
+    color: #f48fb1;
+    border-bottom-color: #f48fb1;
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* ===== MAIN ===== */
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 20px;
+  }
+
+  /* ===== WELCOME SECTION ===== */
+  .welcome-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+    margin-bottom: 80px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .welcome-text h2 {
+    font-family: 'Amiri', serif;
+    font-size: 38px;
+    color: var(--rose);
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+
+  .welcome-text p {
+    font-size: 17px;
+    line-height: 1.9;
+    color: var(--text-soft);
+    margin-bottom: 16px;
+  }
+
+  .welcome-text .flower-quote {
+    background: linear-gradient(135deg, var(--rose-pale), #f3e5f5);
+    border-right: 4px solid var(--rose);
+    border-radius: 0 12px 12px 0;
+    padding: 16px 20px;
+    font-family: 'Amiri', serif;
+    font-style: italic;
+    color: var(--rose);
+    font-size: 18px;
+    margin-top: 20px;
+  }
+
+  .welcome-visual {
+    position: relative;
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .science-flower {
+    position: relative;
+    width: 260px;
+    height: 260px;
+  }
+
+  .sf-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--rose), #ad1457);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 0 30px rgba(194,24,91,0.3);
+    z-index: 5;
+    animation: pulse-center 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-center {
+    0%, 100% { box-shadow: 0 0 30px rgba(194,24,91,0.3); }
+    50% { box-shadow: 0 0 60px rgba(194,24,91,0.6); }
+  }
+
+  .sf-petal {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 70px; height: 70px;
+    border-radius: 50% 50% 50% 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transform-origin: center;
+    animation: petal-bloom 4s ease-in-out infinite;
+  }
+
+  .sf-petal:nth-child(2) { background: #f06292; transform: translate(-50%, -50%) rotate(0deg) translateY(-95px); animation-delay: 0s; }
+  .sf-petal:nth-child(3) { background: #ba68c8; transform: translate(-50%, -50%) rotate(45deg) translateY(-95px); animation-delay: 0.5s; }
+  .sf-petal:nth-child(4) { background: #4db6ac; transform: translate(-50%, -50%) rotate(90deg) translateY(-95px); animation-delay: 1s; }
+  .sf-petal:nth-child(5) { background: #81c784; transform: translate(-50%, -50%) rotate(135deg) translateY(-95px); animation-delay: 1.5s; }
+  .sf-petal:nth-child(6) { background: #ffb74d; transform: translate(-50%, -50%) rotate(180deg) translateY(-95px); animation-delay: 2s; }
+  .sf-petal:nth-child(7) { background: #ef5350; transform: translate(-50%, -50%) rotate(225deg) translateY(-95px); animation-delay: 2.5s; }
+  .sf-petal:nth-child(8) { background: #42a5f5; transform: translate(-50%, -50%) rotate(270deg) translateY(-95px); animation-delay: 3s; }
+  .sf-petal:nth-child(9) { background: #ff8a65; transform: translate(-50%, -50%) rotate(315deg) translateY(-95px); animation-delay: 3.5s; }
+
+  @keyframes petal-bloom {
+    0%, 100% { opacity: 0.85; transform: translate(-50%, -50%) rotate(var(--r)) translateY(-95px) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--r)) translateY(-90px) scale(1.1); }
+  }
+
+  /* ===== SECTION HEADER ===== */
+  .section-header {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+
+  .section-header h2 {
+    font-family: 'Amiri', serif;
+    font-size: 36px;
+    color: var(--rose);
+    position: relative;
+    display: inline-block;
+  }
+
+  .section-header h2::before,
+  .section-header h2::after {
+    content: '🌸';
+    margin: 0 12px;
+    font-size: 24px;
+  }
+
+  .section-header p {
+    color: var(--text-soft);
+    font-size: 16px;
+    margin-top: 10px;
+  }
+
+  .divider {
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--rose-light), transparent);
+    margin: 15px auto;
+    width: 200px;
+  }
+
+  /* ===== SUBJECTS CARDS ===== */
+  .subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 28px;
+    margin-bottom: 80px;
+  }
+
+  .subject-card {
+    background: white;
+    border-radius: 20px;
+    padding: 36px 24px;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(194,24,91,0.08);
+    border: 1px solid rgba(194,24,91,0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .subject-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+    background: var(--card-color, var(--rose));
+  }
+
+  .subject-card::after {
+    content: var(--flower, '🌸');
+    position: absolute;
+    bottom: -10px; left: -10px;
+    font-size: 60px;
+    opacity: 0.06;
+    transition: all 0.4s;
+  }
+
+  .subject-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(194,24,91,0.15);
+  }
+
+  .subject-card:hover::after { opacity: 0.12; transform: rotate(15deg) scale(1.2); }
+
+  .subject-card:nth-child(1) { --card-color: #c2185b; --flower: '🌹'; animation-delay: 0.1s; }
+  .subject-card:nth-child(2) { --card-color: #00695c; --flower: '🌿'; animation-delay: 0.2s; }
+  .subject-card:nth-child(3) { --card-color: #1565c0; --flower: '💧'; animation-delay: 0.3s; }
+  .subject-card:nth-child(4) { --card-color: #6a1b9a; --flower: '⚛️'; animation-delay: 0.4s; }
+
+  .card-icon {
+    font-size: 52px;
+    margin-bottom: 16px;
+    display: block;
+    animation: bounce-icon 3s ease-in-out infinite;
+  }
+
+  @keyframes bounce-icon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .card-desc {
+    font-size: 14px;
+    color: var(--text-soft);
+    line-height: 1.7;
+  }
+
+  /* ===== SCHEDULE TABLE ===== */
+  .schedule-section {
+    margin-bottom: 80px;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+
+  .schedule-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(194,24,91,0.1);
+    background: white;
+  }
+
+  .schedule-table th {
+    background: linear-gradient(135deg, #880e4f, #c2185b);
+    color: white;
+    padding: 18px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .schedule-table td {
+    padding: 16px 20px;
+    text-align: center;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(194,24,91,0.06);
+    transition: background 0.3s;
+  }
+
+  .schedule-table tr:last-child td { border-bottom: none; }
+  .schedule-table tr:hover td { background: var(--rose-pale); }
+  .schedule-table td:first-child { font-weight: 700; color: var(--rose); }
+
+  .time-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+    color: var(--rose);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* ===== ANNOUNCEMENTS ===== */
+  .announcements-section {
+    margin-bottom: 80px;
+    animation: fadeUp 0.6s ease 0.4s both;
+  }
+
+  .ann-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .ann-card {
+    background: white;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border: 1px solid rgba(194,24,91,0.08);
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    transition: all 0.3s;
+  }
+
+  .ann-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 36px rgba(194,24,91,0.12);
+  }
+
+  .ann-icon {
+    font-size: 40px;
+    flex-shrink: 0;
+    animation: wobble 4s ease-in-out infinite;
+  }
+
+  @keyframes wobble {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+  }
+
+  .ann-body h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .ann-body p {
+    font-size: 14px;
+    color: var(--text-soft);
+    line-height: 1.7;
+  }
+
+  .ann-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--rose);
+    margin-top: 10px;
+    font-weight: 600;
+  }
+
+  /* ===== GALLERY ===== */
+  .gallery-section {
+    margin-bottom: 80px;
+    animation: fadeUp 0.6s ease 0.5s both;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .gallery-item {
+    aspect-ratio: 1;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    cursor: pointer;
+    transition: all 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gallery-item:hover { transform: scale(1.05); }
+
+  .gallery-item span {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px;
+    text-align: center;
+    transform: translateY(100%);
+    transition: transform 0.3s;
+  }
+
+  .gallery-item:hover span { transform: translateY(0); }
+
+  .gi-1 { background: linear-gradient(135deg, #f8bbd0, #e91e63); }
+  .gi-2 { background: linear-gradient(135deg, #c8e6c9, #388e3c); }
+  .gi-3 { background: linear-gradient(135deg, #bbdefb, #1976d2); }
+  .gi-4 { background: linear-gradient(135deg, #e1bee7, #7b1fa2); }
+  .gi-5 { background: linear-gradient(135deg, #fff9c4, #f9a825); }
+  .gi-6 { background: linear-gradient(135deg, #b2dfdb, #00695c); }
+
+  .gallery-item:nth-child(1) { grid-column: span 2; aspect-ratio: 2/1; }
+
+  /* ===== CONTACT ===== */
+  .contact-section {
+    background: linear-gradient(135deg, #880e4f, #c2185b, #6a1b9a);
+    border-radius: 28px;
+    padding: 60px 40px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 80px;
+    animation: fadeUp 0.6s ease 0.6s both;
+  }
+
+  .contact-section::before {
+    content: '🌸🌺🌹🌷🌼';
+    position: absolute;
+    top: -10px; left: 0;
+    width: 100%;
+    font-size: 40px;
+    letter-spacing: 30px;
+    opacity: 0.15;
+  }
+
+  .contact-section::after {
+    content: '🌸🌺🌹🌷🌼';
+    position: absolute;
+    bottom: -10px; left: 0;
+    width: 100%;
+    font-size: 40px;
+    letter-spacing: 30px;
+    opacity: 0.15;
+  }
+
+  .contact-section h2 {
+    font-family: 'Amiri', serif;
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  .contact-section p {
+    opacity: 0.85;
+    margin-bottom: 36px;
+    font-size: 17px;
+  }
+
+  .contact-cards {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .contact-card {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    padding: 20px 30px;
+    min-width: 160px;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  .contact-card:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-5px);
+  }
+
+  .contact-card .ci { font-size: 32px; margin-bottom: 8px; }
+  .contact-card .cl { font-size: 13px; opacity: 0.8; }
+  .contact-card .cv { font-size: 16px; font-weight: 700; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    background: #1a0a0a;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-flowers {
+    font-size: 24px;
+    letter-spacing: 10px;
+    margin-bottom: 12px;
+    opacity: 0.7;
+  }
+
+  /* ===== FLOATING PARTICLES ===== */
+  .particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .particle {
+    position: absolute;
+    font-size: 16px;
+    animation: fall-particle linear infinite;
+    opacity: 0;
+  }
+
+  @keyframes fall-particle {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.7; }
+    90% { opacity: 0.5; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .welcome-section { grid-template-columns: 1fr; }
+    .welcome-visual { display: none; }
+    .ann-grid { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; }
+    .gallery-item:nth-child(1) { grid-column: span 2; }
+    .subjects-grid { grid-template-columns: 1fr 1fr; }
+    .nav-link { padding: 14px 12px; font-size: 12px; }
+    .contact-section { padding: 40px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background Flowers -->
+<div class="bg-flowers">
+  <div class="bg-flower">🌸</div>
+  <div class="bg-flower">🌺</div>
+  <div class="bg-flower">🌹</div>
+  <div class="bg-flower">🌷</div>
+  <div class="bg-flower">🌼</div>
+  <div class="bg-flower">🌻</div>
+  <div class="bg-flower">⚗️</div>
+</div>
+
+<!-- Falling Particles -->
+<div class="particles" id="particles"></div>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-flowers">
+    <div class="hf">🌸</div>
+    <div class="hf">🌺</div>
+    <div class="hf">🌹</div>
+    <div class="hf">🌷</div>
+    <div class="hf">🌼</div>
+    <div class="hf">⚛️</div>
+  </div>
+
+  <!-- Atom decoration -->
+  <div class="atom-deco">
+    <div class="atom-circle"></div>
+    <div class="atom-circle"></div>
+    <div class="atom-circle"></div>
+    <div class="atom-nucleus"></div>
+  </div>
+
+  <div class="header-content">
+    <div class="header-badge">🌸 مرحباً بكم في موقعي التعليمي 🌸</div>
+    <div class="teacher-avatar">👩‍🏫</div>
+    <h1 class="header-title">معلمة العلوم</h1>
+    <p class="header-subtitle">نشر العلم بعطر الورود 🌺</p>
+    <div class="header-flowers-text">🌸 🔬 🌹 ⚗️ 🌷 🧬 🌼</div>
+  </div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#welcome" class="nav-link">🏠 الرئيسية</a>
+    <a href="#subjects" class="nav-link">📚 المواد</a>
+    <a href="#schedule" class="nav-link">🗓️ الجدول</a>
+    <a href="#announcements" class="nav-link">📢 الإعلانات</a>
+    <a href="#gallery" class="nav-link">🖼️ المعرض</a>
+    <a href="#contact" class="nav-link">📬 تواصل معي</a>
+  </div>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+  <!-- Welcome -->
+  <section id="welcome" class="welcome-section">
+    <div class="welcome-text">
+      <h2>🌸 أهلاً بطلابي الأعزاء</h2>
+      <p>مرحباً بكم في موقعي التعليمي المخصص لمادة العلوم. هنا ستجدون كل ما تحتاجونه من مواد دراسية، واجبات، وأنشطة تعليمية ممتعة.</p>
+      <p>العلم مثل الوردة، يحتاج إلى رعاية وصبر حتى يُزهر ويُثمر. معاً سنكتشف أسرار العالم من حولنا.</p>
+      <div class="flower-quote">
+        "العلم نور يضيء الطريق، والورود تُجمّله... لنسير معاً نحو المعرفة 🌹"
+      </div>
+    </div>
+    <div class="welcome-visual">
+      <div class="science-flower">
+        <div class="sf-center">🔬</div>
+        <div class="sf-petal">🌸</div>
+        <div class="sf-petal">🧪</div>
+        <div class="sf-petal">🌺</div>
+        <div class="sf-petal">🔭</div>
+        <div class="sf-petal">🌹</div>
+        <div class="sf-petal">⚗️</div>
+        <div class="sf-petal">🌷</div>
+        <div class="sf-petal">🧬</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subjects -->
+  <section id="subjects">
+    <div class="section-header">
+      <h2>المواد الدراسية</h2>
+      <div class="divider"></div>
+      <p>اضغط على أي مادة لمعرفة المزيد عنها</p>
+    </div>
+    <div class="subjects-grid">
+      <div class="subject-card">
+        <span class="card-icon">🧫</span>
+        <div class="card-title">الأحياء</div>
+        <div class="card-desc">ندرس الحياة بكل أشكالها، من أصغر خلية إلى أكبر كائن حي</div>
+      </div>
+      <div class="subject-card">
+        <span class="card-icon">🌿</span>
+        <div class="card-title">علوم البيئة</div>
+        <div class="card-desc">نحافظ على كوكبنا ونفهم النظم البيئية وتوازنها الجميل</div>
+      </div>
+      <div class="subject-card">
+        <span class="card-icon">⚗️</span>
+        <div class="card-title">الكيمياء</div>
+        <div class="card-desc">نكتشف العناصر والتفاعلات الكيميائية وأسرار المادة</div>
+      </div>
+      <div class="subject-card">
+        <span class="card-icon">⚛️</span>
+        <div class="card-title">الفيزياء</div>
+        <div class="card-desc">ندرس قوانين الكون من الجاذبية إلى الضوء والطاقة</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Schedule -->
+  <section id="schedule" class="schedule-section">
+    <div class="section-header">
+      <h2>جدول الحصص</h2>
+      <div class="divider"></div>
+      <p>مواعيد الحصص الأسبوعية</p>
+    </div>
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>اليوم</th>
+          <th>الحصة الأولى</th>
+          <th>الحصة الثانية</th>
+          <th>الحصة الثالثة</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>الأحد 🌸</td>
+          <td><span class="time-badge">⏰ 8:00</span> أحياء - الصف الأول</td>
+          <td><span class="time-badge">⏰ 10:00</span> كيمياء - الصف الثاني</td>
+          <td><span class="time-badge">⏰ 12:00</span> فيزياء - الصف الثالث</td>
+        </tr>
+        <tr>
+          <td>الاثنين 🌺</td>
+          <td><span class="time-badge">⏰ 8:00</span> علوم البيئة</td>
+          <td><span class="time-badge">⏰ 10:00</span> أحياء - الصف الثاني</td>
+          <td><span class="time-badge">⏰ 12:00</span> مراجعة عامة</td>
+        </tr>
+        <tr>
+          <td>الثلاثاء 🌹</td>
+          <td><span class="time-badge">⏰ 8:00</span> كيمياء - الصف الأول</td>
+          <td><span class="time-badge">⏰ 10:00</span> فيزياء - الصف الثاني</td>
+          <td><span class="time-badge">⏰ 12:00</span> نشاط مختبري 🔬</td>
+        </tr>
+        <tr>
+          <td>الأربعاء 🌷</td>
+          <td><span class="time-badge">⏰ 8:00</span> أحياء - الصف الثالث</td>
+          <td><span class="time-badge">⏰ 10:00</span> علوم البيئة</td>
+          <td><span class="time-badge">⏰ 12:00</span> اختبارات قصيرة 📝</td>
+        </tr>
+        <tr>
+          <td>الخميس 🌼</td>
+          <td><span class="time-badge">⏰ 8:00</span> مراجعة شاملة</td>
+          <td><span class="time-badge">⏰ 10:00</span> ساعة مفتوحة للأسئلة</td>
+          <td><span class="time-badge">⏰ 12:00</span> أنشطة إثرائية 🌟</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Announcements -->
+  <section id="announcements" class="announcements-section">
+    <div class="section-header">
+      <h2>الإعلانات والأخبار</h2>
+      <div class="divider"></div>
+    </div>
+    <div class="ann-grid">
+      <div class="ann-card">
+        <div class="ann-icon">📢</div>
+        <div class="ann-body">
+          <h3>اختبار الأحياء الفصلي</h3>
+          <p>سيُعقد الاختبار الفصلي لمادة الأحياء الأسبوع القادم. المطلوب مراجعة الوحدتين الأولى والثانية بالكامل.</p>
+          <div class="ann-date">🌸 15 مارس 2025</div>
+        </div>
+      </div>
+      <div class="ann-card">
+        <div class="ann-icon">🔬</div>
+        <div class="ann-body">
+          <h3>رحلة المختبر العلمي</h3>
+          <p>نسعد بدعوة الطلاب لزيارة مختبر الجامعة الخميس القادم. الرجاء إحضار موافقة ولي الأمر.</p>
+          <div class="ann-date">🌺 20 مارس 2025</div>
+        </div>
+      </div>
+      <div class="ann-card">
+        <div class="ann-icon">🌹</div>
+        <div class="ann-body">
+          <h3>مسابقة العلوم السنوية</h3>
+          <p>يسعدني الإعلان عن مسابقة العلوم للعام الدراسي. قدموا أفكاركم الإبداعية وستحصلون على جوائز رائعة!</p>
+          <div class="ann-date">🌷 1 أبريل 2025</div>
+        </div>
+      </div>
+      <div class="ann-card">
+        <div class="ann-icon">📚</div>
+        <div class="ann-body">
+          <h3>ملفات الدراسة متاحة</h3>
+          <p>تم رفع ملفات الشرح الكاملة للفصل الدراسي الأول. يمكن تحميلها من قسم المواد الدراسية.</p>
+          <div class="ann-date">🌼 5 أبريل 2025</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery" class="gallery-section">
+    <div class="section-header">
+      <h2>معرض الصور</h2>
+      <div class="divider"></div>
+      <p>لحظات علمية جميلة من الفصل والمختبر</p>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-item gi-1">🌸🔬🌸<span>تجارب المختبر</span></div>
+      <div class="gallery-item gi-2">🌿<span>دروس البيئة</span></div>
+      <div class="gallery-item gi-3">💧<span>تجارب الكيمياء</span></div>
+      <div class="gallery-item gi-4">⚛️<span>علوم الفيزياء</span></div>
+      <div class="gallery-item gi-5">🌟<span>مسابقات علمية</span></div>
+      <div class="gallery-item gi-6">🌺<span>أنشطة إثرائية</span></div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="contact-section">
+    <h2>🌸 تواصلي معي 🌸</h2>
+    <p>أنا هنا للمساعدة في أي وقت، لا تترددوا في التواصل معي</p>
+    <div class="contact-cards">
+      <div class="contact-card">
+        <div class="ci">📧</div>
+        <div class="cl">البريد الإلكتروني</div>
+        <div class="cv">science@school.edu.sa</div>
+      </div>
+      <div class="contact-card">
+        <div class="ci">📱</div>
+        <div class="cl">رقم الواتساب</div>
+        <div class="cv">+966 5X XXX XXXX</div>
+      </div>
+      <div class="contact-card">
+        <div class="ci">🕐</div>
+        <div class="cl">ساعات الدوام</div>
+        <div class="cv">الأحد - الخميس</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-flowers">🌸 🌺 🌹 🌷 🌼 🌻 🌸</div>
+  <p>صُمم بكل محبة لطلابي الأعزاء 💕 | معلمة العلوم</p>
+  <p style="margin-top:8px; font-size:12px;">🌸 العلم والورود: جمال الحياة 🌸</p>
+</footer>
+
+<script>
+  // Create falling flower/science particles
+  const emojis = ['🌸','🌺','🌹','🌷','🌼','⚗️','🔬','⚛️','✨','🌿'];
+  const container = document.getElementById('particles');
+
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (8 + Math.random() * 15) + 's';
+    p.style.animationDelay = (Math.random() * 20) + 's';
+    p.style.fontSize = (10 + Math.random() * 16) + 'px';
+    container.appendChild(p);
+  }
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
