@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إنشاء مجلد جديد</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #c2185b;
+    --primary-light: #f48fb1;
+    --bg-color: #fce4ec;
+    --text-color: #2c1a1a;
+    --white: #ffffff;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Tajawal', sans-serif;
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .container {
+    background: var(--white);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(194, 24, 91, 0.1);
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+  }
+
+  h1 {
+    color: var(--primary);
+    margin-bottom: 30px;
+    font-size: 28px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+    text-align: right;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+    outline: none;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--primary-light);
+  }
+
+  button {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    width: 100%;
+  }
+
+  button:hover {
+    background: #ad1457;
+  }
+
+  button:active {
+    transform: translateY(2px);
+  }
+
+  button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  .loader {
+    display: none;
+    margin: 20px auto;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .result-section {
+    display: none;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid #eee;
+  }
+
+  .result-link {
+    display: block;
+    margin-bottom: 20px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: bold;
+    word-break: break-all;
+    background: #fdf5f8;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .qr-container {
+    margin-top: 20px;
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    display: inline-block;
+  }
+
+  .qr-container img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .copy-btn {
+    background: #4caf50;
+    margin-top: 15px;
+  }
+
+  .copy-btn:hover {
+    background: #388e3c;
+  }
+
+  .message {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #4caf50;
+    display: none;
+  }
+
+  .error-message {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #f44336;
+    display: none;
+  }
+
+  #hidden-clipboard {
+    position: absolute;
+    left: -9999px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>إنشاء مجلد جديد 🌸</h1>
+
+  <div class="form-group">
+    <label for="folderName">اسم المجلد:</label>
+    <input type="text" id="folderName" placeholder="أدخل اسم المجلد هنا..." required>
+  </div>
+
+  <button id="submitBtn" onclick="createFolder()">إنشاء المجلد</button>
+
+  <div class="loader" id="loader"></div>
+  <div class="error-message" id="errorMessage"></div>
+
+  <div class="result-section" id="resultSection">
+    <h3>تم إنشاء المجلد بنجاح! 🎉</h3>
+    <br>
+    <label>رابط المجلد:</label>
+    <a href="#" target="_blank" class="result-link" id="folderLink">اضغط هنا لفتح المجلد</a>
+
+    <label>رمز الـ QR (مرتبط بالرابط):</label>
+    <div class="qr-container" id="qrContainer">
+      <!-- The anchor wrapping the image makes it hyperlinked when copied -->
+      <a href="#" target="_blank" id="qrLink">
+        <img id="qrImage" src="" alt="QR Code">
+      </a>
+    </div>
+
+    <button class="copy-btn" onclick="copyQR()">نسخ الرمز المربع (QR) 📋</button>
+    <div class="message" id="copyMessage">تم نسخ الرمز المربع إلى الحافظة بنجاح! يمكنك لصقه الآن.</div>
+  </div>
+</div>
+
+<div id="hidden-clipboard"></div>
+
+<script>
+  // استبدل هذا الرابط برابط Web App الخاص بك بعد نشره في Google Apps Script
+  const SCRIPT_URL = "https://script.google.com/macros/s/FAKE/exec";
+
+  async function createFolder() {
+    const folderNameInput = document.getElementById('folderName');
+    const folderName = folderNameInput.value.trim();
+    const btn = document.getElementById('submitBtn');
+    const loader = document.getElementById('loader');
+    const resultSection = document.getElementById('resultSection');
+    const errorMessage = document.getElementById('errorMessage');
+
+    if (!folderName) {
+      alert("الرجاء إدخال اسم المجلد");
+      return;
+    }
+
+    if (SCRIPT_URL === "https://script.google.com/macros/s/FAKE/exec") {
+        alert("الرجاء إضافة رابط Google Apps Script أولاً في الكود.");
+        return;
+    }
+
+    // واجهة مستخدم قيد التحميل
+    btn.disabled = true;
+    loader.style.display = 'block';
+    resultSection.style.display = 'none';
+    errorMessage.style.display = 'none';
+
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({ folderName: folderName })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // عرض النتائج
+        const folderLink = document.getElementById('folderLink');
+        const qrImage = document.getElementById('qrImage');
+        const qrLink = document.getElementById('qrLink');
+
+        folderLink.href = result.folderUrl;
+        folderLink.textContent = result.folderUrl;
+
+        qrImage.src = result.qrCodeUrl;
+        qrLink.href = result.folderUrl; // لجعل الصورة قابلة للنقر والنسخ كرابط تشعبي
+
+        resultSection.style.display = 'block';
+        folderNameInput.value = ''; // مسح الحقل
+      } else {
+        throw new Error(result.error || "حدث خطأ غير معروف");
+      }
+    } catch (error) {
+      errorMessage.textContent = "خطأ: " + error.message;
+      errorMessage.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      loader.style.display = 'none';
+    }
+  }
+
+  function copyQR() {
+    const qrContainer = document.getElementById('qrContainer');
+    const copyMessage = document.getElementById('copyMessage');
+
+    // إنشاء كائن تحديد (Selection)
+    const selection = window.getSelection();
+    const range = document.createRange();
+
+    // تحديد محتوى حاوية الـ QR (والتي تحتوي على رابط <a> بداخله <img>)
+    range.selectNodeContents(qrContainer);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    try {
+      // نسخ المحتوى الغني (Rich Text)
+      document.execCommand('copy');
+      copyMessage.style.display = 'block';
+      setTimeout(() => {
+        copyMessage.style.display = 'none';
+      }, 3000);
+    } catch (err) {
+      console.error('فشل النسخ', err);
+      alert('فشل نسخ الرمز، يرجى المحاولة يدوياً');
+    }
+
+    // إزالة التحديد
+    selection.removeAllRanges();
+  }
+</script>
+
+</body>
+</html>
