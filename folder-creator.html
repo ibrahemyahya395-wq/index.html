@@ -163,12 +163,13 @@
     color: #4caf50;
     display: none;
   }
-
+  
   .error-message {
     margin-top: 15px;
     font-size: 14px;
     color: #f44336;
     display: none;
+    word-wrap: break-word;
   }
 
   #hidden-clipboard {
@@ -181,14 +182,14 @@
 
 <div class="container">
   <h1>إنشاء مجلد جديد 🌸</h1>
-
+  
   <div class="form-group">
     <label for="folderName">اسم المجلد:</label>
     <input type="text" id="folderName" placeholder="أدخل اسم المجلد هنا..." required>
   </div>
-
+  
   <button id="submitBtn" onclick="createFolder()">إنشاء المجلد</button>
-
+  
   <div class="loader" id="loader"></div>
   <div class="error-message" id="errorMessage"></div>
 
@@ -197,25 +198,22 @@
     <br>
     <label>رابط المجلد:</label>
     <a href="#" target="_blank" class="result-link" id="folderLink">اضغط هنا لفتح المجلد</a>
-
+    
     <label>رمز الـ QR (مرتبط بالرابط):</label>
     <div class="qr-container" id="qrContainer">
-      <!-- The anchor wrapping the image makes it hyperlinked when copied -->
       <a href="#" target="_blank" id="qrLink">
         <img id="qrImage" src="" alt="QR Code">
       </a>
     </div>
-
+    
     <button class="copy-btn" onclick="copyQR()">نسخ الرمز المربع (QR) 📋</button>
     <div class="message" id="copyMessage">تم نسخ الرمز المربع إلى الحافظة بنجاح! يمكنك لصقه الآن.</div>
   </div>
 </div>
 
-<div id="hidden-clipboard"></div>
-
 <script>
-  // استبدل هذا الرابط برابط Web App الخاص بك بعد نشره في Google Apps Script
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwYmwyyh367qU2i1cUHVHOUFiObZRimyHMaWh7cQz4b9IQ0zzupTEkKXQiwpSnEIXv/exec";
+  // رابط Google Apps Script الأخير الخاص بك
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIQXQ_yps707XB4FykhGoixTZJGPzaX8nNS3SSoPqpe3hvhmomjIUZmPKcEJmWzqY/exec";
 
   async function createFolder() {
     const folderNameInput = document.getElementById('folderName');
@@ -230,11 +228,6 @@
       return;
     }
 
-    if (SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
-        alert("الرجاء إضافة رابط Google Apps Script أولاً في الكود.");
-        return;
-    }
-
     // واجهة مستخدم قيد التحميل
     btn.disabled = true;
     loader.style.display = 'block';
@@ -242,15 +235,22 @@
     errorMessage.style.display = 'none';
 
     try {
+      // إرسال البيانات باستخدام POST ولكن كبيانات نموذج (Form Data) لتجنب مشكلة التحويل (Redirect)
       const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
+        method: "POST",
+        body: JSON.stringify({ folderName: folderName }),
         headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
-        },
-        body: JSON.stringify({ folderName: folderName })
+          "Content-Type": "text/plain;charset=utf-8",
+        }
       });
 
-      const result = await response.json();
+      const textResult = await response.text();
+      let result;
+      try {
+          result = JSON.parse(textResult);
+      } catch(e) {
+          throw new Error("حدث خطأ في الاتصال بالخادم. يرجى التأكد من صلاحيات الرابط.");
+      }
 
       if (result.success) {
         // عرض النتائج
@@ -260,9 +260,9 @@
 
         folderLink.href = result.folderUrl;
         folderLink.textContent = result.folderUrl;
-
+        
         qrImage.src = result.qrCodeUrl;
-        qrLink.href = result.folderUrl; // لجعل الصورة قابلة للنقر والنسخ كرابط تشعبي
+        qrLink.href = result.folderUrl;
 
         resultSection.style.display = 'block';
         folderNameInput.value = ''; // مسح الحقل
@@ -281,18 +281,15 @@
   function copyQR() {
     const qrContainer = document.getElementById('qrContainer');
     const copyMessage = document.getElementById('copyMessage');
-
-    // إنشاء كائن تحديد (Selection)
+    
     const selection = window.getSelection();
     const range = document.createRange();
-
-    // تحديد محتوى حاوية الـ QR (والتي تحتوي على رابط <a> بداخله <img>)
+    
     range.selectNodeContents(qrContainer);
     selection.removeAllRanges();
     selection.addRange(range);
-
+    
     try {
-      // نسخ المحتوى الغني (Rich Text)
       document.execCommand('copy');
       copyMessage.style.display = 'block';
       setTimeout(() => {
@@ -302,8 +299,7 @@
       console.error('فشل النسخ', err);
       alert('فشل نسخ الرمز، يرجى المحاولة يدوياً');
     }
-
-    // إزالة التحديد
+    
     selection.removeAllRanges();
   }
 </script>
