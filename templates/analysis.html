@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .report-container {
+        margin-top: 20px;
+    }
+
+    .report-section {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .report-header {
+        background: #f5f5f5;
+        padding: 15px;
+        font-weight: bold;
+        font-size: 18px;
+        color: var(--primary);
+        border-bottom: 1px solid #ddd;
+    }
+
+    .report-content {
+        padding: 15px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+
+    .status-present {
+        background: #e8f5e9;
+        color: var(--success);
+    }
+
+    .status-missing {
+        background: #ffebee;
+        color: var(--danger);
+    }
+
+    .file-list {
+        margin-top: 10px;
+        padding-right: 20px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .folder-item {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed #eee;
+    }
+
+    .folder-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .missing-list {
+        color: var(--danger);
+        padding-right: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block header_content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>تحليل شواهد: {{ teacher.name }}</h2>
+    <div>
+        <a href="{{ url_for('teacher_dashboard', teacher_id=teacher.id) }}" class="btn btn-outline">عودة للوحة التحكم ↩️</a>
+        <button onclick="window.print()" class="btn">طباعة التقرير 🖨️</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    {% for main_folder, data in report.items() %}
+    <div class="report-section">
+        <div class="report-header">
+            {{ main_folder }}
+            <span style="float: left; font-size: 14px; font-weight: normal; color: #666;">
+                المكتمل: {{ data.present|length }} / {{ data.present|length + data.missing|length }}
+            </span>
+        </div>
+        <div class="report-content">
+
+            {% if data.present %}
+                <h4 style="color: var(--success); margin-bottom: 10px;">✅ الشواهد المكتملة:</h4>
+                {% for item in data.present %}
+                <div class="folder-item">
+                    <strong>{{ item.folder }}</strong>
+                    <ul class="file-list">
+                        {% for file in item.files %}
+                        <li>{{ file }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if data.present and data.missing %}
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
+            {% endif %}
+
+            {% if data.missing %}
+                <h4 style="color: var(--danger); margin-bottom: 10px;">❌ الشواهد الناقصة:</h4>
+                <ul class="missing-list">
+                    {% for folder in data.missing %}
+                    <li>{{ folder }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
