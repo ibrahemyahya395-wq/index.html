@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة التطبيقات التعليمية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: #F8FAFC;
+            color: #1E293B;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: white;
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .header h1 {
+            color: #4F46E5;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #64748B;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid #E2E8F0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #4F46E5;
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            background: #EEF2FF;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #0F172A;
+        }
+
+        .card-desc {
+            color: #64748B;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #94A3B8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>البوابة التعليمية الذكية</h1>
+        <p>اختر التطبيق الذي تود استخدامه للبدء</p>
+    </div>
+
+    <div class="container">
+        <a href="/sorter" class="card">
+            <div class="icon">🤖</div>
+            <div class="card-title">الفارز الذكي (v2)</div>
+            <div class="card-desc">أداة ذكاء اصطناعي لتحليل وتصنيف شواهد وملفات المعلمين ورفعها إلى جوجل درايف مباشرة.</div>
+        </a>
+
+        <a href="/folder-creator" class="card">
+            <div class="icon">📁</div>
+            <div class="card-title">أداة إنشاء المجلدات</div>
+            <div class="card-desc">تطبيق مبسط لإنشاء مجلدات جوجل درايف للمعلمين بضغطة زر مع إصدار رمز استجابة سريع (QR).</div>
+        </a>
+
+        <a href="/teacher-site" class="card">
+            <div class="icon">🌸</div>
+            <div class="card-title">موقع المعلم (نموذج)</div>
+            <div class="card-desc">استعرض القالب التفاعلي الجميل لموقع معلم العلوم مع الجداول والأقسام.</div>
+        </a>
+    </div>
+
+    <div class="footer">
+        بناء النظام بأحدث التقنيات لخدمة القطاع التعليمي.
+    </div>
+</body>
+</html>
