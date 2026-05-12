@@ -3,12 +3,25 @@ import os
 import json
 import uuid
 import shutil
+import base64
 from werkzeug.utils import secure_filename
 from folders_structure import FOLDERS_STRUCTURE, ALL_SUBFOLDERS
 from ocr_processor import process_file
+from google import genai
 
 app = Flask(__name__)
 app.secret_key = 'smart-sorter-secret-key'
+
+# Initialize Gemini Client
+# Assumes GEMINI_API_KEY is in environment variables.
+from dotenv import load_dotenv
+load_dotenv('.env.local')
+load_dotenv()
+try:
+    ai = genai.Client()
+except Exception as e:
+    print(f"Failed to initialize Gemini client: {e}")
+    ai = None
 
 DATA_FILE = 'data/teachers.json'
 UPLOAD_FOLDER = 'uploads'
@@ -37,6 +50,11 @@ def setup_teacher_folders(teacher_id):
 def index():
     teachers = get_teachers()
     return render_template('index.html', teachers=teachers)
+
+@app.route('/react')
+@app.route('/react/<path:path>')
+def serve_react(path=''):
+    return app.send_static_file('react/index.html')
 
 @app.route('/add_teacher', methods=['POST'])
 def add_teacher():
@@ -120,6 +138,129 @@ def upload_files(teacher_id):
 
     return jsonify({'success': True, 'results': results})
 
+@app.route('/api/classify', methods=['POST'])
+def api_classify():
+    if not ai:
+        return jsonify({"error": "Gemini client not initialized"}), 500
+
+    data = request.json
+    base64_data = data.get('base64Data')
+    mime_type = data.get('mimeType')
+    original_name = data.get('originalName')
+
+    if not base64_data or not mime_type or not original_name:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        # Strip data URL prefix if present
+        if ',' in base64_data:
+            base64_data = base64_data.split(',')[1]
+
+        file_bytes = base64.b64decode(base64_data)
+
+        categories_list = ""
+        for i, (main_folder, subfolders) in enumerate(FOLDERS_STRUCTURE.items(), 1):
+            categories_list += f"الفئة {i}: {main_folder}\n"
+            categories_list += f"البنود الفرعية: [{', '.join(subfolders)}]\n\n"
+
+        prompt = f"""
+        أنت خبير في تقييم أداء المعلمين. مهمتك هي تحليل الملف المرفق (قد يكون صورة أو مستند ب دي اف) وتصنيفه بدقة.
+        كما يجب عليك اقتراح اسم جديد وواضح للملف يعبر عن محتواه ونوعه (بدون امتداد الملف).
+
+        اسم الملف الأصلي: {original_name}
+
+        الهيكل التنظيمي للفرز والمجلدات المتاح للتصنيف فيه:
+        {categories_list}
+
+        المطلوب:
+        1. استخراج أو تخمين اسم مناسب للملف يصف محتواه بدقة ليكون اسمه الجديد (مثال: "تحضير درس الرياضيات الأسبوع الأول", "شهادة دورة التقنية").
+        2. تحديد جميع الفئات والبنود الفرعية المناسبة للملف (يمكن أن ينتمي لأكثر من بند). استخدم الأسماء الدقيقة للبنود كما هي مكتوبة وتأكد من مطابقتها.
+
+        يجب أن يكون ردك بصيغة JSON فقط كالتالي، ولا تقم بإضافة أي نص خارج الـ JSON:
+        {{
+          "suggestedName": "الاسم الجديد المقترح هنا",
+          "tags": [
+            {{ "categoryId": رقم_الفئة, "subCategoryName": "الاسم الدقيق للبند الفرعي" }}
+          ]
+        }}
+        """
+
+        response = ai.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[
+                prompt,
+                genai.types.Part.from_bytes(data=file_bytes, mime_type=mime_type)
+            ],
+            config=genai.types.GenerateContentConfig(
+                temperature=0.1,
+                response_mime_type="application/json",
+            ),
+        )
+
+        text = response.text.strip()
+        # Clean up any markdown code block wrap if present
+        if text.startswith('```json'):
+            text = text[7:]
+        if text.startswith('```'):
+            text = text[3:]
+        if text.endswith('```'):
+            text = text[:-3]
+
+        result = json.loads(text.strip())
+
+        if "tags" not in result:
+            result["tags"] = []
+
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"Classification error: {e}")
+        return jsonify({
+            "suggestedName": original_name.split('.')[0],
+            "tags": [{"categoryId": 1, "subCategoryName": "غير مصنف"}]
+        })
+
+@app.route('/api/analyze', methods=['POST'])
+def api_analyze():
+    if not ai:
+        return jsonify({"error": "Gemini client not initialized"}), 500
+
+    data = request.json
+    teacher_name = data.get('teacherName')
+    files_list_str = data.get('filesListStr')
+
+    if not teacher_name or files_list_str is None:
+         return jsonify({"error": "Missing required fields"}), 400
+
+    prompt = f"""
+    أنت مستشار تقييم معلمين في السعودية وتوجيه وارشاد مهني للمعلمين. قم بكتابة تقرير تحليلي احترافي للمعلم "{teacher_name}" بناءً على الشواهد والأدلة التي تم التعرف عليها وتسليمها ومطابقتها مع معايير التقييم الـ 11.
+
+    البيانات (الملفات المدرجة والفئات التي صنفت لها):
+    {files_list_str}
+
+    المطلوب:
+    اكتب تقريراً نصياً، منظماً ومرتباً ومميزاً يشمل:
+    1. نقاط القوة: أين يبرز المعلم بشكل مشوق وماهي المجلدات والمعايير المكتملة بصورة مميزة.
+    2. النواقص أو الثغرات: ما هي المجالات والشواهد والمجلدات المفقودة أو التي لم يتم تسليم شواهد بها ويجب على المعلم أضافتها والعمل عليها لتكملة ملفه.
+    3. توصيات تطويرية: نصيحة مهنية قصيرة ومباشرة في نقطتين لرفع الأداء المهني وسد الثغرات.
+
+    صيغ التقرير بلغة عربية فصحى مشوقه بتنسيق Markdown.
+    """
+
+    try:
+        response = ai.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=genai.types.GenerateContentConfig(
+                temperature=0.5,
+            )
+        )
+        return jsonify({"report": response.text})
+    except Exception as e:
+        print(f"Analysis error: {e}")
+        return jsonify({"report": "تعذر إنشاء التقرير. يرجى المحاولة لاحقاً أو التحقق من وجود الشواهد."})
+
+
 @app.route('/analyze/<teacher_id>')
 def analyze_files(teacher_id):
     teachers = get_teachers()
@@ -143,4 +284,4 @@ def analyze_files(teacher_id):
     return render_template('analysis.html', teacher=teacher, report=report)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=3000, host='0.0.0.0')
+    app.run(debug=True, port=8501, host='0.0.0.0')
