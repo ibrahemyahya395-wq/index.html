@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل التقرير - {{ teacher.name }}</title>
+    <!-- Font Awesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            /* هوية التوجيه والإرشاد (الأخضر المزرق والذهبي) */
+            --primary-color: #00695c;
+            --secondary-color: #00897b;
+            --accent-color: #f59e0b;
+            --bg-color: #f0fdfa;
+            --paper-bg: #ffffff;
+            --page-width: 210mm;
+            --page-height: 297mm;
+        }
+
+        body { margin: 0; padding: 10px; background-color: var(--bg-color); font-family: 'Sakkal Majalla', 'Sakkal', 'Segoe UI', Tahoma, sans-serif; display: flex; justify-content: center; min-height: 100vh; }
+
+        /* لوحة التحكم الجانبية */
+        .controls-panel { position: fixed; right: 20px; top: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 250px; z-index: 2000; }
+        .controls-panel h3 { margin-top: 0; color: var(--primary-color); font-size: 1.1rem; border-bottom: 2px solid var(--accent-color); padding-bottom: 5px; }
+        .controls-panel label { font-size: 0.85rem; font-weight: bold; color: var(--primary-color); display: block; margin-top: 10px; margin-bottom: 5px;}
+        .controls-panel select, .controls-panel input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: 0.9rem;}
+
+        .btn { display: block; width: 100%; padding: 10px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; text-align: center; font-weight: bold; margin-top: 10px; text-decoration: none; box-sizing: border-box; }
+        .btn:hover { opacity: 0.9; } .btn-print { background-color: #059669; } .btn-upload { background-color: #7c3aed; } .btn-save { background-color: #e65100; } .btn-back { background-color: #607d8b; }
+
+        /* تنسيق الورقة A4 عمودي */
+        .a4-paper { width: var(--page-width); height: var(--page-height); max-width: var(--page-width); max-height: var(--page-height); background-color: var(--paper-bg); box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; overflow: hidden; margin: 0 auto; }
+
+        /* مربع النص العائم المخصص للديباجة (شفاف، أبيض، خط عريض) */
+        .floating-textbox { position: absolute; top: 0.8cm; right: 1cm; width: 280px; min-height: 80px; background: transparent; border: 1px dashed transparent; z-index: 1500; display: flex; flex-direction: column; resize: both; overflow: visible; }
+        .floating-textbox:hover { border: 1px dashed rgba(0,0,0,0.3); }
+        .floating-textbox .drag-handle { height: 15px; cursor: move; display: flex; align-items: center; justify-content: center; color: #555; font-size: 10px; opacity: 0; transition: opacity 0.3s; background: rgba(255,255,255,0.5); }
+        .floating-textbox:hover .drag-handle { opacity: 1; }
+        .floating-textbox .text-content { flex-grow: 1; padding: 5px; outline: none; color: black; font-family: 'Sakkal Majalla', serif; font-size: 14pt; font-weight: bold; line-height: 1.1; text-align: right; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; word-wrap: break-word; }
+
+        /* طبقة الخلفية (الديباجة/الترويسة) */
+        .image-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .image-layer img { width: 100%; height: 100%; object-fit: fill; display: block; }
+
+        /* طبقة المحتوى الرئيسي */
+        .content-layer { position: relative; z-index: 10; width: 100%; height: 100%; outline: none; line-height: 1.5; color: #222; padding: 3.8cm 1.5cm 6cm 1.5cm; box-sizing: border-box; font-size: 0.85rem; }
+        .main-title { text-align: center; color: var(--primary-color); font-size: 1.6rem; margin: 8px 0; text-decoration: underline double var(--accent-color); }
+        .badge-center { text-align: center; background: var(--primary-color); color: white; padding: 4px 20px; border-radius: 50px; font-size: 0.85rem; width: fit-content; margin: 0 auto 10px auto; font-weight: bold; }
+
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(255, 255, 255, 0.9); }
+        table th, table td { border: 1px solid var(--secondary-color); padding: 6px; font-size: 0.9rem; text-align: center; }
+        table th { background-color: #e0f2f1; color: var(--primary-color); }
+
+        .section-box { border: 1.2px solid var(--primary-color); border-radius: 8px; margin-top: 10px; overflow: hidden; background: #fff; }
+        .section-header { background-color: var(--primary-color); color: white; padding: 5px 15px; font-size: 1rem; font-weight: bold; }
+        .section-content { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        h4 { margin: 0 0 4px 0; color: var(--secondary-color); font-size: 0.95rem; }
+        ul { margin: 0; padding-right: 20px; font-size: 0.85rem; }
+
+        /* قسم الشواهد (باركود في المنتصف فقط) */
+        .evidence-section { display: flex; justify-content: center; align-items: center; margin-top: 12px; padding: 15px; border: 1.2px dashed var(--secondary-color); border-radius: 10px; background-color: #fafafa; }
+        .qr-item { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .interactive-qr-link { display: block; text-decoration: none; position: relative; z-index: 1000; cursor: pointer; padding: 5px; background: white; border: 1px solid #eee; border-radius: 4px; }
+        .qr-img { width: 85px !important; height: 85px !important; display: block; }
+
+        .signature-area { position: absolute; bottom: 35mm; left: 1.5cm; right: 1.5cm; display: flex; justify-content: space-around; font-weight: bold; font-size: 1rem; z-index: 20; }
+        .footer-info { position: absolute; bottom: 12mm; left: 1.5cm; right: 1.5cm; text-align: center; font-size: 0.8rem; color: #666; border-top: 1px solid #ddd; padding-top: 8px; z-index: 20; }
+
+        @media print {
+            body { background: none !important; padding: 0 !important; margin: 0 !important; }
+            .controls-panel, .drag-handle { display: none !important; }
+            .floating-textbox { border: none !important; box-shadow: none !important; }
+            .a4-paper { box-shadow: none !important; width: 210mm !important; height: 297mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; display: block !important; position: relative !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            @page { size: A4 portrait; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls-panel">
+        <h3>أدوات التقارير</h3>
+
+        <label>اختاري نوع التقرير:</label>
+        <select id="reportSelector" onchange="loadReportTemplate()">
+            <option value="delay">1. برنامج التأخر الدراسي</option>
+            <option value="orientation">2. أسبوع التهيئة الإرشادية</option>
+            <option value="internet">3. الاستخدام الآمن للإنترنت</option>
+            <option value="national">4. تفعيل اليوم الوطني</option>
+            <option value="crisis">5. التوجيه وقت الأزمات</option>
+            <option value="behavior">6. تعزيز السلوك الإيجابي</option>
+            <option value="motivation">7. تنمية الدافعية للتعلم</option>
+            <option value="council">8. المجلس الطلابي</option>
+            <option value="discipline">9. الانضباط المدرسي</option>
+            <option value="twinning">10. برنامج التوأمة</option>
+        </select>
+
+        <label for="linkInput">رابط الشواهد (Drive):</label>
+        <input type="text" id="linkInput" placeholder="الصقي الرابط هنا ليتحول باركود">
+
+        <label for="bgUpload" class="btn btn-upload">إضافة ديباجة (خلفية)</label>
+        <input type="file" id="bgUpload" accept="image/*" style="display:none">
+
+        <button class="btn btn-save" onclick="saveReport()">حفظ التقرير 💾</button>
+        <button class="btn btn-print" onclick="window.print()">تنزيل PDF 🖨️</button>
+        <a href="{{ url_for('teacher_reports', teacher_id=teacher.id) }}" class="btn btn-back">رجوع للقائمة ↩️</a>
+        <hr>
+        <div style="font-size: 0.8rem; text-align: center; color: #666;">
+            لتكبير خط النص العائم: اضغطي بداخله ثم استخدمي مفتاح (+) من الكيبورد. ويمكنك تغيير لون الخط من الأبيض للأسود عند الطباعة حسب الحاجة.
+        </div>
+    </div>
+
+    <div class="a4-paper" id="report-container">
+        <!-- مربع النص العائم الذكي -->
+        <div class="floating-textbox" id="floatingBox">
+            <div class="drag-handle"><i class="fas fa-arrows-alt"></i></div>
+            <div class="text-content" id="textContent" contenteditable="true">
+                <div>المملكة العربية السعودية</div>
+                <div>وزارة التعليم</div>
+                <div>الادارة العامة</div>
+            </div>
+        </div>
+
+        <div class="image-layer">
+            <img id="bgImg" src="" alt="">
+        </div>
+
+        <div class="content-layer" id="editableContent" contenteditable="true">
+            <div class="badge-center" contenteditable="false" style="background-color: var(--primary-color);">✦ تقرير التوجيه والإرشاد ✦</div>
+            <h1 class="main-title" id="reportTitle">برنامج التأخر الدراسي</h1>
+
+            <table>
+                <tbody>
+                    <tr>
+                        <th width="20%">المعلمة</th>
+                        <td width="30%">{{ teacher.name }}</td>
+                        <th width="20%">المدرسة</th>
+                        <td>الابتدائية الثامنه</td>
+                    </tr>
+                    <tr>
+                        <th>الفئة المستهدفة</th>
+                        <td id="targetGroup">الطالبات المتأخرات دراسياً</td>
+                        <th>العام الدراسي</th>
+                        <td>1446 هـ</td>
+                    </tr>
+                    <tr>
+                        <th>البرنامج</th>
+                        <td id="programType">الإرشاد التعليمي</td>
+                        <th>المديرة</th>
+                        <td>بسماء جمعه</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="section-box">
+                <div class="section-header">أولاً: وصف البرنامج وأهدافه</div>
+                <div class="section-content">
+                    <p style="margin: 0;"><b>الوصف:</b> <span id="descText">برنامج إرشادي يهدف إلى متابعة الطالبات اللاتي يعانين من تدني في التحصيل الدراسي، ودراسة الأسباب ووضع الخطط العلاجية.</span></p>
+                    <div class="grid-2">
+                        <div>
+                            <h4>الأهداف:</h4>
+                            <ul id="goalsList">
+                                <li>حصر الطالبات المتأخرات دراسياً.</li>
+                                <li>تحديد الأسباب (نفسية، أسرية، صحية).</li>
+                                <li>رفع المستوى التحصيلي للطالبات.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>المكتسبات:</h4>
+                            <ul id="gainsList">
+                                <li>تعزيز الثقة بالنفس والقدرات.</li>
+                                <li>تواصل فعّال بين المدرسة والأسرة.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-box">
+                <div class="section-header">ثانياً: آلية التنفيذ والنتائج</div>
+                <div class="section-content">
+                    <ul id="mechList">
+                        <li><b>الحصر:</b> جمع وتحليل نتائج الطالبات.</li>
+                        <li><b>دراسة الحالة:</b> عقد جلسات فردية لمعرفة الأسباب.</li>
+                        <li><b>التدخل:</b> وضع خطة علاجية بالتنسيق مع المعلمات.</li>
+                        <li><b>المتابعة:</b> التواصل المستمر مع الأسرة.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section-box" contenteditable="false">
+                <div class="section-header">ثالثاً: شواهد التنفيذ والتوثيق</div>
+                <div class="section-content">
+                    <div class="evidence-section">
+                        <div class="qr-item">
+                            <a href="#" target="_blank" class="interactive-qr-link" id="qrLink" title="انقر لفتح مجلد الشواهد">
+                                <img class="qr-img" id="qrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=empty" alt="QR Code">
+                            </a>
+                            <small style="font-weight: bold; color: var(--primary-color); margin-top: 5px;">انقري هنا لفتح مجلد الشواهد (Drive)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="signature-area" contenteditable="true" id="signatureArea">
+            <div style="text-align: center;">المعلمة<br>{{ teacher.name }}</div>
+            <div style="text-align: center;">المديرة<br>بسماء جمعه</div>
+        </div>
+
+        <div class="footer-info" id="footerText">
+            الابتدائية الثامنه | التوجيه والإرشاد | برنامج التأخر الدراسي
+        </div>
+    </div>
+
+    <script>
+        // بيانات التقرير الحالي المحملة من الخادم
+        let currentReport = null;
+        {% if report %}
+            currentReport = {{ report | tojson | safe }};
+        {% endif %}
+
+        // بيانات التقارير السبعة
+        const reportsTemplates = {
+            delay: { title: "برنامج التأخر الدراسي", target: "الطالبات المتأخرات دراسياً", program: "الإرشاد التعليمي", desc: "برنامج إرشادي يهدف إلى متابعة الطالبات اللاتي يعانين من تدني في التحصيل الدراسي، ودراسة الأسباب ووضع الخطط العلاجية.", goals: "<li>حصر الطالبات المتأخرات دراسياً.</li><li>تحديد الأسباب (نفسية، أسرية، صحية).</li><li>رفع المستوى التحصيلي.</li>", gains: "<li>تعزيز الثقة بالنفس والقدرات.</li><li>تواصل فعّال بين المدرسة والأسرة.</li>", mech: "<li><b>الحصر:</b> جمع وتحليل نتائج الطالبات.</li><li><b>دراسة الحالة:</b> عقد جلسات فردية لمعرفة الأسباب.</li><li><b>التدخل:</b> وضع خطة علاجية بالتنسيق مع المعلمات.</li><li><b>المتابعة:</b> التواصل مع الأسرة.</li>", footerTitle: "الابتدائية الثامنه | برنامج التأخر الدراسي", link: "" },
+            orientation: { title: "أسبوع التهيئة الإرشادية", target: "الطالبات المستجدات", program: "الإرشاد النفسي والاجتماعي", desc: "برنامج لتهيئة الطالبات نفسياً واجتماعياً للبيئة المدرسية ومساعدتهن على التكيف وتخفيف مشاعر القلق.", goals: "<li>تخفيف قلق ورهبة المستجدات.</li><li>التعريف بمرافق وأنظمة المدرسة.</li><li>توطيد العلاقة مع المعلمات.</li>", gains: "<li>التكيف السريع مع البيئة الجديدة.</li><li>خلق بيئة مدرسية آمنة وجاذبة.</li>", mech: "<li><b>الاستقبال:</b> الترحيب بالطالبات وتوزيع البطاقات.</li><li><b>الجولة:</b> تعريف الطالبات بمرافق المدرسة.</li><li><b>الأنشطة:</b> تقديم برامج ترفيهية.</li><li><b>الشراكة:</b> عقد لقاء تعريفي للأمهات.</li>", footerTitle: "الابتدائية الثامنه | أسبوع التهيئة الإرشادية", link: "" },
+            internet: { title: "برنامج الاستخدام الآمن للإنترنت", target: "جميع الطالبات", program: "الإرشاد الوقائي والتوعوي", desc: "برنامج توعوي لتثقيف الطالبات حول المخاطر الإلكترونية والتعامل الآمن والمثمر مع التقنية وشبكات التواصل.", goals: "<li>التوعية بمخاطر الجرائم الإلكترونية.</li><li>إكساب مهارات حماية الخصوصية.</li><li>غرس الرقابة الذاتية.</li>", gains: "<li>طالبة واعية قادرة على حماية نفسها.</li><li>استخدام إيجابي لشبكة الإنترنت.</li>", mech: "<li><b>التوعية:</b> تفعيل الإذاعة المدرسية.</li><li><b>التثقيف:</b> عروض مرئية ونشرات توعوية.</li><li><b>التدريب:</b> ورش عمل لحماية الخصوصية.</li><li><b>التواصل:</b> إرسال رسائل توعوية للأسر.</li>", footerTitle: "الابتدائية الثامنه | الاستخدام الآمن للإنترنت", link: "" },
+            national: { title: "تفعيل مناسبة اليوم الوطني", target: "جميع الطالبات", program: "التوجيه الوطني والاجتماعي", desc: "الاحتفاء بالمناسبة الوطنية لغرس قيم الانتماء والمواطنة والاعتزاز بتاريخ ومكتسبات الوطن لدى الطالبات.", goals: "<li>تعزيز قيم الانتماء والمواطنة.</li><li>التعريف بتاريخ ومكتسبات المملكة.</li><li>إبراز مواهب الطالبات في التعبير عن حبهن لوطنهن.</li>", gains: "<li>ترسيخ الهوية الوطنية.</li><li>تعزيز مشاعر الفخر والاعتزاز بالوطن.</li>", mech: "<li><b>الإعلان:</b> تحفيز الطالبات للمشاركة.</li><li><b>التفعيل:</b> برامج إذاعية وعروض وطنية.</li><li><b>المسابقات:</b> مسابقات لأفضل رسمة وتعبير.</li><li><b>المعرض:</b> إعداد حائط إلكتروني ومشاركات.</li>", footerTitle: "الابتدائية الثامنه | تفعيل اليوم الوطني", link: "" },
+            crisis: { title: "برنامج التوجيه وقت الأزمات", target: "الطالبات المتأثرات", program: "الإرشاد النفسي والطوارئ", desc: "تقديم الدعم النفسي والإرشادي للطالبات خلال الحالات الطارئة والأزمات لضمان استقرارهن النفسي والعودة للحياة الطبيعية.", goals: "<li>تخفيف الآثار النفسية السلبية.</li><li>نشر رسائل الطمأنينة والأمان.</li><li>التدريب على المرونة النفسية.</li>", gains: "<li>الاستقرار النفسي وتجاوز الصدمات.</li><li>بناء الشخصية القادرة على التكيف.</li>", mech: "<li><b>الاحتواء:</b> عقد جلسات دعم نفسي.</li><li><b>الطمأنينة:</b> نشر رسائل إيجابية.</li><li><b>التمكين:</b> تدريب الطالبات على المرونة.</li><li><b>الأسرة:</b> توجيه الأهل للتعامل السليم.</li>", footerTitle: "الابتدائية الثامنه | التوجيه وقت الأزمات", link: "" },
+            behavior: { title: "برنامج تعزيز السلوك الإيجابي", target: "جميع الطالبات", program: "التوجيه السلوكي", desc: "برنامج وقائي وعلاجي يهدف إلى تنمية السلوكيات الإيجابية والحد من المشكلات والمخالفات السلوكية في البيئة المدرسية.", goals: "<li>نشر ثقافة الاحترام والتقدير.</li><li>تحفيز الطالبات على السلوك الجيد.</li><li>معالجة السلوكيات السلبية مبكراً.</li>", gains: "<li>بيئة مدرسية آمنة ومحفزة.</li><li>علاقات إيجابية بين الطالبات.</li>", mech: "<li><b>الوقاية:</b> محاضرات عن السلوك الحسن.</li><li><b>التحفيز:</b> إطلاق مسابقات (أفضل سلوك).</li><li><b>التعزيز:</b> بطاقات تعزيز وشهادات شكر.</li><li><b>العلاج:</b> تدخل إرشادي للسلوكيات السلبية.</li>", footerTitle: "الابتدائية الثامنه | تعزيز السلوك الإيجابي", link: "" },
+            motivation: { title: "برنامج تنمية الدافعية للتعلم", target: "ذوات الدافعية المنخفضة", program: "الإرشاد التعليمي", desc: "برنامج لإثارة دافعية الطالبات نحو التعلم واكتشاف قدراتهن الكامنة وتشجيعهن على التفوق والنجاح.", goals: "<li>غرس الطموح وحب التميز.</li><li>مساعدة الطالبات في تحديد أهدافهن.</li><li>معالجة الأسباب النفسية لتدني الدافعية.</li>", gains: "<li>استعادة الشغف بالتعلم.</li><li>تحمل المسؤولية الذاتية للمذاكرة.</li>", mech: "<li><b>الاستكشاف:</b> حصر حالات الدافعية المنخفضة.</li><li><b>الإلهام:</b> استضافة طالبات متفوقات كقدوات.</li><li><b>التدريب:</b> ورش عمل للتخطيط وتحديد الأهداف.</li><li><b>المكافأة:</b> تقديم تعزيز فوري ومستمر للمتحسنات.</li>", footerTitle: "الابتدائية الثامنه | تنمية الدافعية", link: "" },
+            council: { title: "تشكيل وتفعيل المجلس الطلابي", target: "طالبات المدرسة (عضوات المجلس)", program: "التوجيه القيادي والاجتماعي", desc: "برنامج يهدف إلى تنمية شخصية الطالبة وصقل مهاراتها القيادية من خلال إشراكها في التخطيط والتنظيم وحل المشكلات المدرسية.", goals: "<li>تنمية المهارات القيادية والحوارية.</li><li>غرس روح تحمل المسؤولية.</li><li>المشاركة في صنع القرارات المدرسية.</li>", gains: "<li>طالبات قادرات على القيادة والمبادرة.</li><li>بيئة مدرسية تشاركية وديمقراطية.</li>", mech: "<li><b>الترشيح:</b> فتح باب الترشيح لعضوية المجلس.</li><li><b>الانتخاب:</b> إجراء انتخابات طلابية نزيهة.</li><li><b>التشكيل:</b> إعلان أسماء العضوات وعقد الاجتماع الأول.</li><li><b>التفعيل:</b> إسناد المهام وتنفيذ المبادرات الطلابية.</li>", footerTitle: "الابتدائية الثامنه | المجلس الطلابي", link: "" },
+            discipline: { title: "برنامج الانضباط المدرسي والحد من الغياب", target: "الطالبات كثيرات الغياب والتأخر", program: "الإرشاد التربوي والوقائي", desc: "برنامج إرشادي يهدف إلى غرس قيمة الانضباط واحترام الوقت لدى الطالبات، ومعالجة أسباب الغياب والتأخر الصباحي لتحسين المستوى التحصيلي.", goals: "<li>الحد من ظاهرة الغياب والتأخر الصباحي.</li><li>توعية الأسرة بأهمية الانضباط المدرسي.</li><li>تحسين المستوى التحصيلي للطالبات.</li>", gains: "<li>بيئة مدرسية منضبطة وجاذبة.</li><li>رفع نسبة الحضور والتميز الأكاديمي.</li>", mech: "<li><b>التوعية:</b> نشر ثقافة الانضباط عبر الإذاعة.</li><li><b>الحصر:</b> متابعة سجلات الحضور والغياب بشكل دقيق.</li><li><b>التدخل:</b> دراسة الأسباب الفردية وتوجيه الأسرة.</li><li><b>التحفيز:</b> تكريم الطالبات المنضبطات بصفة دورية.</li>", footerTitle: "الابتدائية الثامنه | الانضباط المدرسي", link: "" },
+            twinning: { title: "برنامج التوأمة والشراكة الطلابية", target: "الطالبات المتعثرات دراسياً", program: "الإرشاد التعليمي والتطوعي", desc: "برنامج قائم على فكرة التعلم بالقرناء، حيث يتم ربط طالبة متفوقة (قرينة) بطالبة تحتاج إلى دعم أكاديمي أو اجتماعي لرفع مستواها وتعزيز ثقتها.", goals: "<li>رفع المستوى التحصيلي للطالبات المتعثرات.</li><li>تنمية روح التعاون والعمل التطوعي.</li><li>تبادل الخبرات والمهارات بين الطالبات.</li>", gains: "<li>توطيد العلاقات الإيجابية بين الطالبات.</li><li>تحسن ملحوظ في الأداء الدراسي للمتعثرات.</li>", mech: "<li><b>التهيئة:</b> حصر الطالبات (المتفوقات والمتعثرات).</li><li><b>التوأمة:</b> ربط كل طالبة بقرينتها المناسبة.</li><li><b>المتابعة:</b> الإشراف على اللقاءات الدورية وتوجيههن.</li><li><b>التقييم:</b> قياس الأثر التحصيلي وتكريم المتميزات.</li>", footerTitle: "الابتدائية الثامنه | برنامج التوأمة", link: "" }
+        };
+
+        function loadReportTemplate() {
+            // لا نغير القالب إذا كنا نقوم بتعديل تقرير موجود إلا إذا اختار المستخدم ذلك
+            const type = document.getElementById('reportSelector').value;
+            const data = reportsTemplates[type];
+
+            document.getElementById('reportTitle').innerText = data.title;
+            document.getElementById('targetGroup').innerText = data.target;
+            document.getElementById('programType').innerText = data.program;
+            document.getElementById('descText').innerText = data.desc;
+            document.getElementById('goalsList').innerHTML = data.goals;
+            document.getElementById('gainsList').innerHTML = data.gains;
+            document.getElementById('mechList').innerHTML = data.mech;
+            document.getElementById('footerText').innerText = data.footerTitle;
+
+            document.getElementById('linkInput').value = data.link;
+            updateQR();
+        }
+
+        function updateQR() {
+            const link = document.getElementById('linkInput').value;
+            const qrLinkObj = document.getElementById('qrLink');
+            const qrImgObj = document.getElementById('qrImage');
+
+            if(link) {
+                qrLinkObj.href = link;
+                qrImgObj.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(link);
+            } else {
+                qrLinkObj.href = "#";
+                qrImgObj.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=empty";
+            }
+        }
+        document.getElementById('linkInput').addEventListener('input', updateQR);
+
+        // تحميل بيانات التقرير المحفوظ
+        function loadSavedReport() {
+            if (currentReport) {
+                document.getElementById('editableContent').innerHTML = currentReport.content;
+                document.getElementById('textContent').innerHTML = currentReport.floatingText;
+                document.getElementById('floatingBox').style.top = currentReport.floatingBoxTop || '0.8cm';
+                document.getElementById('floatingBox').style.left = currentReport.floatingBoxLeft || 'auto';
+                document.getElementById('floatingBox').style.right = currentReport.floatingBoxRight || '1cm';
+                document.getElementById('bgImg').src = currentReport.bgImage || '';
+                document.getElementById('linkInput').value = currentReport.qrLink || '';
+                document.getElementById('signatureArea').innerHTML = currentReport.signatureArea || '';
+                document.getElementById('footerText').innerText = currentReport.footerText || '';
+
+                // Set the selector to match the title (heuristic)
+                const title = document.getElementById('reportTitle').innerText;
+                for (const key in reportsTemplates) {
+                    if (reportsTemplates[key].title === title) {
+                        document.getElementById('reportSelector').value = key;
+                        break;
+                    }
+                }
+                updateQR();
+            } else {
+                loadReportTemplate(); // تحميل القالب الافتراضي لو كان تقريراً جديداً
+            }
+        }
+
+        // حفظ التقرير
+        function saveReport() {
+            const btn = document.querySelector('.btn-save');
+            btn.innerText = "جاري الحفظ...";
+
+            const reportData = {
+                id: currentReport ? currentReport.id : null,
+                title: document.getElementById('reportTitle').innerText,
+                date: new Date().toLocaleString('ar-SA'),
+                content: document.getElementById('editableContent').innerHTML,
+                floatingText: document.getElementById('textContent').innerHTML,
+                floatingBoxTop: document.getElementById('floatingBox').style.top,
+                floatingBoxLeft: document.getElementById('floatingBox').style.left,
+                floatingBoxRight: document.getElementById('floatingBox').style.right,
+                bgImage: document.getElementById('bgImg').src,
+                qrLink: document.getElementById('linkInput').value,
+                signatureArea: document.getElementById('signatureArea').innerHTML,
+                footerText: document.getElementById('footerText').innerText
+            };
+
+            fetch('{{ url_for("save_report", teacher_id=teacher.id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reportData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    btn.innerText = "تم الحفظ بنجاح ✓";
+                    if (!currentReport) {
+                        currentReport = { id: data.report_id };
+                    }
+                    setTimeout(() => { btn.innerText = "حفظ التقرير 💾"; }, 2000);
+                } else {
+                    alert('حدث خطأ أثناء الحفظ');
+                    btn.innerText = "حفظ التقرير 💾";
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('حدث خطأ في الاتصال بالخادم');
+                btn.innerText = "حفظ التقرير 💾";
+            });
+        }
+
+        // ميزة تحريك مربع النص
+        const box = document.getElementById('floatingBox');
+        const handle = box.querySelector('.drag-handle');
+        let isDragging = false; let offset = { x: 0, y: 0 };
+        handle.onmousedown = function(e) { isDragging = true; offset.x = e.clientX - box.offsetLeft; offset.y = e.clientY - box.offsetTop; document.onmousemove = onMouseMove; document.onmouseup = onMouseUp; };
+        function onMouseMove(e) { if (!isDragging) return; box.style.left = (e.clientX - offset.x) + 'px'; box.style.top = (e.clientY - offset.y) + 'px'; box.style.right = 'auto'; }
+        function onMouseUp() { isDragging = false; document.onmousemove = null; document.onmouseup = null; }
+
+        // تغيير حجم الخط بلوحة المفاتيح
+        const textContent = document.getElementById('textContent');
+        textContent.addEventListener('keydown', function(e) {
+            let currentSize = parseFloat(window.getComputedStyle(textContent).fontSize);
+            if (e.key === '+' || e.key === '=') { textContent.style.fontSize = (currentSize + 1) + 'px'; e.preventDefault(); }
+            else if (e.key === '-' || e.key === '_') { textContent.style.fontSize = (currentSize - 1) + 'px'; e.preventDefault(); }
+        });
+
+        // رفع صورة الديباجة
+        document.getElementById('bgUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => document.getElementById('bgImg').src = event.target.result;
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Initialize
+        window.onload = loadSavedReport;
+
+    </script>
+</body>
+</html>
