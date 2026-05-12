@@ -131,6 +131,15 @@
             <p>عرض تقرير نصي شامل لمحتويات المجلد وما ينقص</p>
         </div>
     </a>
+
+    <!-- Reports Area -->
+    <a href="{{ url_for('teacher_reports', teacher_id=teacher.id) }}" style="text-decoration: none; color: inherit;">
+        <div class="action-card">
+            <div class="action-icon">📝</div>
+            <div class="action-title">إدارة التقارير</div>
+            <p>تصفح، تعديل، إنشاء واسترجاع التقارير الخاصة بك</p>
+        </div>
+    </a>
 </div>
 
 <div class="results-area" id="results-area">

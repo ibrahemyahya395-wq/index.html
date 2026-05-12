@@ -11,6 +11,7 @@ app = Flask(__name__)
 app.secret_key = 'smart-sorter-secret-key'
 
 DATA_FILE = 'data/teachers.json'
+REPORTS_FILE = 'data/reports.json'
 UPLOAD_FOLDER = 'uploads'
 os.makedirs('data', exist_ok=True)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -19,6 +20,10 @@ if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump([], f)
 
+if not os.path.exists(REPORTS_FILE):
+    with open(REPORTS_FILE, 'w', encoding='utf-8') as f:
+        json.dump({}, f)
+
 def get_teachers():
     with open(DATA_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
@@ -26,6 +31,14 @@ def get_teachers():
 def save_teachers(teachers):
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(teachers, f, ensure_ascii=False, indent=4)
+
+def get_reports():
+    with open(REPORTS_FILE, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def save_reports(reports):
+    with open(REPORTS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(reports, f, ensure_ascii=False, indent=4)
 
 def setup_teacher_folders(teacher_id):
     base_path = os.path.join(UPLOAD_FOLDER, teacher_id)
@@ -141,6 +154,89 @@ def analyze_files(teacher_id):
                 report[main_folder]['missing'].append(sub)
 
     return render_template('analysis.html', teacher=teacher, report=report)
+
+@app.route('/teacher/<teacher_id>/reports')
+def teacher_reports(teacher_id):
+    teachers = get_teachers()
+    teacher = next((t for t in teachers if t['id'] == teacher_id), None)
+    if not teacher:
+        flash('المعلم غير موجود', 'error')
+        return redirect(url_for('index'))
+
+    reports_data = get_reports()
+    teacher_reports_list = reports_data.get(teacher_id, [])
+
+    return render_template('reports_list.html', teacher=teacher, reports=teacher_reports_list)
+
+@app.route('/teacher/<teacher_id>/report/new')
+def new_report(teacher_id):
+    teachers = get_teachers()
+    teacher = next((t for t in teachers if t['id'] == teacher_id), None)
+    if not teacher:
+        flash('المعلم غير موجود', 'error')
+        return redirect(url_for('index'))
+
+    return render_template('report_editor.html', teacher=teacher, report=None)
+
+@app.route('/teacher/<teacher_id>/report/<report_id>/edit')
+def edit_report(teacher_id, report_id):
+    teachers = get_teachers()
+    teacher = next((t for t in teachers if t['id'] == teacher_id), None)
+    if not teacher:
+        flash('المعلم غير موجود', 'error')
+        return redirect(url_for('index'))
+
+    reports_data = get_reports()
+    teacher_reports_list = reports_data.get(teacher_id, [])
+    report = next((r for r in teacher_reports_list if r['id'] == report_id), None)
+
+    if not report:
+        flash('التقرير غير موجود', 'error')
+        return redirect(url_for('teacher_reports', teacher_id=teacher_id))
+
+    return render_template('report_editor.html', teacher=teacher, report=report)
+
+@app.route('/api/teacher/<teacher_id>/reports/save', methods=['POST'])
+def save_report(teacher_id):
+    try:
+        data = request.json
+        reports_data = get_reports()
+
+        if teacher_id not in reports_data:
+            reports_data[teacher_id] = []
+
+        report_id = data.get('id')
+        if not report_id:
+            # Create new report
+            report_id = str(uuid.uuid4())
+            data['id'] = report_id
+            reports_data[teacher_id].append(data)
+        else:
+            # Update existing report
+            for i, r in enumerate(reports_data[teacher_id]):
+                if r['id'] == report_id:
+                    reports_data[teacher_id][i] = data
+                    break
+            else:
+                # If report id not found, append as new (shouldn't happen but safe)
+                reports_data[teacher_id].append(data)
+
+        save_reports(reports_data)
+        return jsonify({'success': True, 'report_id': report_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/teacher/<teacher_id>/reports/<report_id>/delete', methods=['POST'])
+def delete_report(teacher_id, report_id):
+    reports_data = get_reports()
+
+    if teacher_id in reports_data:
+        reports_data[teacher_id] = [r for r in reports_data[teacher_id] if r['id'] != report_id]
+        save_reports(reports_data)
+
+    flash('تم حذف التقرير بنجاح', 'success')
+    return redirect(url_for('teacher_reports', teacher_id=teacher_id))
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000, host='0.0.0.0')
