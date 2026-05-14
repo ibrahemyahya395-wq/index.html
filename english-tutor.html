@@ -354,17 +354,18 @@ IMPORTANT RULES TO ALWAYS FOLLOW:
     }
 
     async function startConversation() {
-        // Start a fresh conversation context
+        chatHistory.push({
+            role: 'user',
+            parts: [{ text: "Hello teacher! I am ready to start my English lesson." }]
+        });
+
         const skill = urlParams.get('skill');
         let promptModifier = "";
         if(skill) {
             promptModifier = `\n\nNote: The student specifically needs help with ${skill}. Please focus heavily on this area while still following the sequence.`;
         }
 
-        // Push system prompt as the first conceptual part of the conversation if needed,
-        // though the new interactions API handles history differently. We will inject it
-        // dynamically into the interaction string.
-        await sendMessageToGemini("Hello teacher! I am ready to start my English lesson.", SYSTEM_PROMPT + promptModifier);
+        await fetchGeminiResponse(SYSTEM_PROMPT + promptModifier, chatHistory);
     }
 
     function toggleListening() {
@@ -388,62 +389,48 @@ IMPORTANT RULES TO ALWAYS FOLLOW:
         document.getElementById('talk-btn').innerText = '🎤 اضغط وتحدث';
     }
 
-    async function sendMessageToGemini(message, systemPromptOverride = null) {
+    async function sendMessageToGemini(message) {
         document.getElementById('status').innerText = 'يفكر...';
+        chatHistory.push({
+            role: 'user',
+            parts: [{ text: message }]
+        });
+        await fetchGeminiResponse(SYSTEM_PROMPT, chatHistory);
+    }
 
-        chatHistory.push("Student: " + message);
-
-        let promptToSend = "";
-        if (systemPromptOverride) {
-             promptToSend += "SYSTEM INSTRUCTIONS: " + systemPromptOverride + "\n\n";
-        } else {
-             promptToSend += "SYSTEM INSTRUCTIONS: " + SYSTEM_PROMPT + "\n\n";
-        }
-
-        promptToSend += "CONVERSATION HISTORY:\n" + chatHistory.join("\n") + "\n\nTeacher: ";
-
+    async function fetchGeminiResponse(systemPrompt, history) {
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/interactions`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': apiKey,
-                    'Api-Revision': '2026-05-20'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: "gemini-3-flash-preview",
-                    input: promptToSend
+                    system_instruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                    contents: history,
+                    generationConfig: {
+                        temperature: 0.7
+                    }
                 })
             });
 
             if (!response.ok) {
-                if (response.status === 400 || response.status === 403) {
-                     throw new Error('مفتاح API غير صالح أو ليس لديك الصلاحية.');
+                if (response.status === 400) {
+                     // Check if it's an API key error
+                     throw new Error('مفتاح API غير صالح.');
                 }
                 throw new Error('حدث خطأ في الاتصال.');
             }
 
             const data = await response.json();
+            const botText = data.candidates[0].content.parts[0].text;
 
-            // Extract response from the new interactions format
-            let botText = "";
-            if (data.steps && data.steps.length > 0) {
-                for (const step of data.steps) {
-                    if (step.type === "model_output" && step.content) {
-                         for (const contentPart of step.content) {
-                             if (contentPart.type === "text" && contentPart.text) {
-                                 botText += contentPart.text;
-                             }
-                         }
-                    }
-                }
-            }
-
-            if(!botText) {
-                 botText = "Sorry, I didn't understand that.";
-            }
-
-            chatHistory.push("Teacher: " + botText);
+            chatHistory.push({
+                role: 'model',
+                parts: [{ text: botText }]
+            });
 
             addMessageToChat('bot', botText);
             document.getElementById('status').innerText = 'يتحدث...';
@@ -452,7 +439,7 @@ IMPORTANT RULES TO ALWAYS FOLLOW:
         } catch (error) {
             console.error(error);
             document.getElementById('status').innerText = 'خطأ: ' + error.message;
-            if (error.message.includes('API') || error.message.includes('الصلاحية')) {
+            if (error.message.includes('API')) {
                 localStorage.removeItem('gemini_api_key');
                 document.getElementById('api-setup').style.display = 'block';
                 document.getElementById('talk-btn').disabled = true;
