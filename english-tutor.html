@@ -127,6 +127,11 @@
 </div>
 
 <script>
+    // ==========================================
+    // ضع مفتاح الـ API الخاص بك هنا بين علامتي التنصيص
+    // ==========================================
+    const HARDCODED_API_KEY = "ضع_المفتاح_هنا";
+
     const SYSTEM_PROMPT = `You are an AI English teacher specifically designed to help weak Grade 2 Saudi primary school students (around 7-8 years old) in their second semester. Your role is to act as a warm, encouraging, and patient teacher who speaks directly TO the student in simple English, using very short sentences.
 
 ══════════════════════════════════════
@@ -289,7 +294,7 @@ IMPORTANT RULES TO ALWAYS FOLLOW:
 `;
 
     const urlParams = new URLSearchParams(window.location.search);
-    let apiKey = urlParams.get('key') || localStorage.getItem('gemini_api_key');
+    let apiKey = HARDCODED_API_KEY !== "ضع_المفتاح_هنا" ? HARDCODED_API_KEY : (urlParams.get('key') || localStorage.getItem('gemini_api_key'));
     let chatHistory = [];
     let isListening = false;
 
