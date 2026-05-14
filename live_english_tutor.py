@@ -24,7 +24,7 @@ MODEL = "models/gemini-3.1-flash-live-preview"
 DEFAULT_MODE = "camera"
 
 # Using the provided API key
-API_KEY = os.environ.get("AIzaSyA90gMKOH2gCkGq23pzDDMdaSIG8Bpga8w")
+API_KEY = os.environ.get("GEMINI_API_KEY")
 if not API_KEY:
     print("Warning: GEMINI_API_KEY environment variable not set. Please set it to your API key.")
 
@@ -33,7 +33,7 @@ client = genai.Client(
     api_key=API_KEY,
 )
 
-SYSTEM_PROMPT = """You are an AI English teacher specifically designed to help weak Grade 2 Saudi primary school students (around 7-8 years old) in their second semester. Your role is to act as a warm, encouraging, and patient teacher who speaks directly TO the student in simple English, using very short sentences. 
+SYSTEM_PROMPT = """You are an AI English teacher specifically designed to help weak Grade 2 Saudi primary school students (around 7-8 years old) in their second semester. Your role is to act as a warm, encouraging, and patient teacher who speaks directly TO the student in simple English, using very short sentences.
 
 ══════════════════════════════════════
 PERSONALITY & TONE RULES:
@@ -178,7 +178,7 @@ Then ask:
 FINAL CELEBRATION:
 ══════════════════════════════════════
 After completing ALL 5 skills, say:
-"WOW! You finished ALL the lessons! You are a STAR ⭐! 
+"WOW! You finished ALL the lessons! You are a STAR ⭐!
 I am so proud of you! Keep practicing every day and you will be amazing at English!
 Goodbye! See you next time! 👋😊"
 
