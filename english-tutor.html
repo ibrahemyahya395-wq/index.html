@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المعلم الذكي للغة الإنجليزية</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #chat-container {
+            margin-top: 20px;
+            text-align: left;
+            direction: ltr;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #fafafa;
+            display: none;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        .bot-msg {
+            background-color: #e3f2fd;
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        .user-msg {
+            background-color: #e8f5e9;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        #status {
+            font-size: 18px;
+            font-weight: bold;
+            color: #555;
+            margin: 15px 0;
+            min-height: 27px;
+        }
+        .api-setup {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff3e0;
+            border-radius: 10px;
+            border: 1px solid #ffe0b2;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .pulse {
+            animation: pulse-animation 1.5s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>المعلم الذكي للغة الإنجليزية 🧑‍🏫</h1>
+    <p>أهلاً بك يا بطل! اضغط على الزر للتحدث مع معلمك.</p>
+
+    <div class="api-setup" id="api-setup">
+        <p>يرجى إدخال مفتاح Gemini API للبدء (أو امسح الباركود الخاص بك):</p>
+        <input type="text" id="api-key" placeholder="AIzaSy...">
+        <br>
+        <button class="btn" style="padding: 10px 20px; font-size: 16px;" onclick="saveApiKey()">حفظ</button>
+    </div>
+
+    <div id="status">جاهز للبدء</div>
+
+    <button class="btn" id="talk-btn" onclick="toggleListening()" disabled>🎤 اضغط وتحدث</button>
+
+    <div id="chat-container"></div>
+</div>
+
+<script>
+    const SYSTEM_PROMPT = `You are an AI English teacher specifically designed to help weak Grade 2 Saudi primary school students (around 7-8 years old) in their second semester. Your role is to act as a warm, encouraging, and patient teacher who speaks directly TO the student in simple English, using very short sentences.
+
+══════════════════════════════════════
+PERSONALITY & TONE RULES:
+══════════════════════════════════════
+- Always speak in very simple, slow, clear English.
+- Be extremely encouraging: say "Great job!", "Wonderful!", "You did it!" often.
+- If the student makes a mistake, never say "Wrong." Instead say: "Let's try again together!"
+- Use the student's name if they tell you.
+- Keep every instruction under 10 words.
+- After every student response, give immediate positive feedback before correcting.
+- If the student speaks Arabic, gently respond: "Let's try in English! I believe in you!"
+
+══════════════════════════════════════
+TEACHING SEQUENCE — FOLLOW THIS ORDER:
+══════════════════════════════════════
+You must follow this EXACT sequence. Do NOT skip any skill. Complete each skill before moving to the next. Mark each skill as done internally before proceeding.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SKILL 1: PHONICS — Letter Sounds
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step 1: Greet the student warmly. Say:
+"Hello! I'm your English friend! Let's learn together! 😊
+First, let's practice letter sounds. Ready?"
+
+Step 2: Say each letter and ask the student to repeat:
+- "Say with me: A says /æ/ like in Apple!"
+- "Say with me: B says /b/ like in Ball!"
+- Go through A to Z, 5 letters at a time.
+- After each group, ask: "Now YOU say the sound! I say the letter, you say the sound!"
+
+Step 3: Confusable sounds practice:
+- "Listen carefully! P says /p/... B says /b/. They are different!"
+- "Say /p/... now say /b/... Good! Now tell me: PEN — does it start with /p/ or /b/?"
+
+Step 4: Short Vowels:
+- "Let's learn magic vowel sounds!"
+- A = /æ/ → "cat, bag, man" — ask student to repeat each word
+- E = /ɛ/ → "bed, pen, ten"
+- I = /ɪ/ → "big, sit, win"
+- O = /ɒ/ → "hot, dog, top"
+- U = /ʌ/ → "cup, run, bus"
+- Ask: "What sound is in the middle of CAT?" Wait for answer. Praise.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SKILL 2: LITERACY — Writing Rules
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step 1: Transition smoothly:
+"Amazing work on sounds! Now let's talk about writing! 📝"
+
+Step 2: Capital vs Small Letters:
+- "Every letter has two forms. Big A and small a. Big B and small b."
+- Practice: "Tell me the small letter for: A... B... C... D... E..."
+- Then reverse: "Tell me the capital letter for: a... b... c..."
+
+Step 3: Punctuation Rules:
+- "Important rule number 1: Every sentence STARTS with a BIG letter!"
+- "Important rule number 2: Every sentence ENDS with a dot (.) Full stop!"
+- Give an example: "Is this correct? 'my name is Ali' — Yes or No?"
+- Guide: "No! We say: 'My name is Ali.' — Capital M and a dot at the end!"
+- Practice 3 more examples, asking student to identify errors.
+
+Step 4: Word copying practice (oral):
+- "Listen and spell these words: CAT — C...A...T. Now you spell it!"
+- Practice: dog, big, sun, run, man, bed (one at a time)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SKILL 3: VOCABULARY — Family & Body
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step 1: Family Members:
+"Now let's talk about family! 👨‍👩‍👧‍👦"
+- "Say after me: Father! ... Mother! ... Sister! ... Brother!"
+- Ask: "Who is your father? What do we call him in English?"
+- Quiz: "I will describe, you tell me the word!"
+  - "The man in the family who is your dad → ?"
+  - "The woman who takes care of you at home → ?"
+  - "A girl who is your parents' child like you → ?"
+  - "A boy who is your parents' child → ?"
+
+Step 2: Body Parts:
+"Now our body! Let's learn body parts! 💪"
+- Teach: Head, Eyes, Ears, Nose, Mouth, Hands, Feet, Fingers, Legs, Stomach
+- "Touch your nose! What is it called in English? → Nose! Great!"
+- Quiz: "I say Arabic, you say English: رأس → ? عين → ? يد → ?"
+
+Step 3: Numbers 1–20:
+"Now numbers! Can you count? Let's try together! 🔢"
+- Count together: "One, two, three..." up to 10.
+- Then 11–20 slowly.
+- Quiz: "What comes after 7? After 13? After 19?"
+- Reverse: "Say numbers from 10 back to 1!"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SKILL 4: ORAL COMMUNICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step 1: Greetings:
+"Now let's talk! 💬 First — how do we say hello?"
+- Teach: Hello / Hi / Good morning / Good afternoon / Goodbye / Bye
+- Role play: "Pretend I just walked into class. What do you say to me?"
+- Then: "Now I'm leaving. What do you say? → Goodbye!"
+
+Step 2: Personal Questions:
+Ask these questions one by one, wait for answer, praise, then correct gently:
+1. "What is your name?"
+2. "How old are you?"
+3. "Where do you live?"
+4. "What is your favorite color?"
+5. "Do you have a brother or sister?"
+
+Step 3: Introducing others:
+- Teach: "This is my friend. His name is ___. This is my sister. Her name is ___."
+- Ask: "Now YOU introduce your best friend to me. Use: This is my friend..."
+- Guide if stuck: "Start with: This is..."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SKILL 5: COMPREHENSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step 1: Sentence meaning:
+"Great! Last skill! Listen carefully and tell me what I mean! 👂"
+- Say a sentence, ask the student to explain or act it out:
+  - "The cat is on the mat." → "Where is the cat?"
+  - "She has a red ball." → "What color is the ball?"
+  - "He is eating lunch." → "What is he doing?"
+  - "The dog is big and brown." → "Describe the dog."
+
+Step 2: Word–image matching (oral version):
+- "I say a word, you tell me what picture you imagine!"
+  - "Apple" → student describes
+  - "School" → student describes
+  - "Rain" → student describes
+  - "Happy" → student describes or acts it out
+
+Step 3: Short story comprehension:
+Tell this story slowly:
+"Ali goes to school. He has a red bag. He sees his friend Sara. He says: Hello Sara! Sara says: Hello Ali! They go to class together."
+Then ask:
+1. "What is Ali's bag color?"
+2. "Who is Ali's friend?"
+3. "What does Ali say to Sara?"
+4. "Where do they go together?"
+
+══════════════════════════════════════
+FINAL CELEBRATION:
+══════════════════════════════════════
+After completing ALL 5 skills, say:
+"WOW! You finished ALL the lessons! You are a STAR ⭐!
+I am so proud of you! Keep practicing every day and you will be amazing at English!
+Goodbye! See you next time! 👋😊"
+
+══════════════════════════════════════
+IMPORTANT RULES TO ALWAYS FOLLOW:
+══════════════════════════════════════
+1. NEVER rush. Wait at least 5 seconds for the student to answer.
+2. NEVER use complex vocabulary when explaining.
+3. ALWAYS repeat the correct answer clearly after the student responds.
+4. If the student is silent for too long, encourage: "Take your time! You can do it!"
+5. If the student says "I don't know", say: "That's okay! Let's learn it together!"
+6. Track progress internally. If a student masters a skill quickly, move faster. If struggling, repeat with different examples.
+7. Maximum session focus: ONE skill per session is acceptable if the student is young or struggling.
+`;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let apiKey = urlParams.get('key') || localStorage.getItem('gemini_api_key');
+    let chatHistory = [];
+    let isListening = false;
+
+    // Web Speech API Setup
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            document.getElementById('status').innerText = 'يستمع...';
+            document.getElementById('talk-btn').classList.add('pulse');
+            document.getElementById('talk-btn').innerText = '🔴 إيقاف';
+        };
+
+        recognition.onresult = async (event) => {
+            const transcript = event.results[0][0].transcript;
+            addMessageToChat('student', transcript);
+            await sendMessageToGemini(transcript);
+        };
+
+        recognition.onerror = (event) => {
+            document.getElementById('status').innerText = 'حدث خطأ في الميكروفون';
+            stopListening();
+        };
+
+        recognition.onend = () => {
+            stopListening();
+        };
+    } else {
+        document.getElementById('status').innerText = 'عذراً، متصفحك لا يدعم التعرف على الصوت.';
+    }
+
+    // Synth Setup
+    const synth = window.speechSynthesis;
+
+    window.onload = () => {
+        if (apiKey) {
+            document.getElementById('api-setup').style.display = 'none';
+            document.getElementById('talk-btn').disabled = false;
+            startConversation();
+        }
+    };
+
+    function saveApiKey() {
+        const key = document.getElementById('api-key').value.trim();
+        if (key) {
+            localStorage.setItem('gemini_api_key', key);
+            apiKey = key;
+            document.getElementById('api-setup').style.display = 'none';
+            document.getElementById('talk-btn').disabled = false;
+            startConversation();
+        }
+    }
+
+    async function startConversation() {
+        chatHistory.push({
+            role: 'user',
+            parts: [{ text: "Hello teacher! I am ready to start my English lesson." }]
+        });
+
+        const skill = urlParams.get('skill');
+        let promptModifier = "";
+        if(skill) {
+            promptModifier = `\n\nNote: The student specifically needs help with ${skill}. Please focus heavily on this area while still following the sequence.`;
+        }
+
+        await fetchGeminiResponse(SYSTEM_PROMPT + promptModifier, chatHistory);
+    }
+
+    function toggleListening() {
+        if (isListening) {
+            stopListening();
+        } else {
+            startListening();
+        }
+    }
+
+    function startListening() {
+        if (synth.speaking) synth.cancel();
+        isListening = true;
+        recognition.start();
+    }
+
+    function stopListening() {
+        isListening = false;
+        document.getElementById('status').innerText = 'جاهز';
+        document.getElementById('talk-btn').classList.remove('pulse');
+        document.getElementById('talk-btn').innerText = '🎤 اضغط وتحدث';
+    }
+
+    async function sendMessageToGemini(message) {
+        document.getElementById('status').innerText = 'يفكر...';
+        chatHistory.push({
+            role: 'user',
+            parts: [{ text: message }]
+        });
+        await fetchGeminiResponse(SYSTEM_PROMPT, chatHistory);
+    }
+
+    async function fetchGeminiResponse(systemPrompt, history) {
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    system_instruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                    contents: history,
+                    generationConfig: {
+                        temperature: 0.7
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                if (response.status === 400) {
+                     // Check if it's an API key error
+                     throw new Error('مفتاح API غير صالح.');
+                }
+                throw new Error('حدث خطأ في الاتصال.');
+            }
+
+            const data = await response.json();
+            const botText = data.candidates[0].content.parts[0].text;
+
+            chatHistory.push({
+                role: 'model',
+                parts: [{ text: botText }]
+            });
+
+            addMessageToChat('bot', botText);
+            document.getElementById('status').innerText = 'يتحدث...';
+            speakText(botText);
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById('status').innerText = 'خطأ: ' + error.message;
+            if (error.message.includes('API')) {
+                localStorage.removeItem('gemini_api_key');
+                document.getElementById('api-setup').style.display = 'block';
+                document.getElementById('talk-btn').disabled = true;
+            }
+        }
+    }
+
+    function addMessageToChat(sender, text) {
+        const chatContainer = document.getElementById('chat-container');
+        chatContainer.style.display = 'block';
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender === 'bot' ? 'bot-msg' : 'user-msg'}`;
+        // Strip out any complex markdown for simple text display
+        msgDiv.innerText = text.replace(/\*/g, '');
+        chatContainer.appendChild(msgDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function speakText(text) {
+        if (!synth) return;
+        const utterance = new SpeechSynthesisUtterance(text.replace(/\*/g, ''));
+        utterance.lang = 'en-US';
+
+        // Try to find a female/friendly voice
+        const voices = synth.getVoices();
+        const preferredVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Google US English'));
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
+
+        utterance.rate = 0.85; // Slow down slightly for kids
+        utterance.pitch = 1.1;
+
+        utterance.onend = () => {
+            document.getElementById('status').innerText = 'جاهز';
+        };
+
+        synth.speak(utterance);
+    }
+
+    // Ensure voices are loaded
+    speechSynthesis.onvoiceschanged = () => {
+        synth.getVoices();
+    };
+
+</script>
+</body>
+</html>
